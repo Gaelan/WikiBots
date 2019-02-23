@@ -108,7 +108,7 @@ def real_url(url):
         return True
 
     try:
-        res = requests.get(url, timeout=10)
+        res = requests.get(url, timeout=10, allow_redirects=False)
         return res.status_code == 200
     except (
         requests.exceptions.ConnectionError,
@@ -201,7 +201,7 @@ def extraneous_symbols_fix(url):
 FIXES = [
     https_fix,
     http_fix,
-    idn_fix,
+    # idn_fix,
     google_books_fix,
     broken_schema_fix,
     double_schema_fix,
@@ -216,7 +216,7 @@ def main():
     strategy_stats = Counter()
     site = pywikibot.Site("en", "wikipedia")
     cat = pywikibot.Category(site, "Pages with URL errors")
-    for art in itertools.islice(cat.articles(namespaces=[0, 118]), 1000):
+    for art in cat.articles(namespaces=[0, 118]):
         if art.botMayEdit():
             edited_article = False
             used_fixes = set()
@@ -263,10 +263,14 @@ def main():
 
             if fixes_made > 0:
                 summary = f"Attempted to automatically fix {fixes_made} citation URL(s). Strategies used: {', '.join(used_fixes)}. Questions? Mistake? Contact [[User talk:Gaelan]]."
-                art.put(str(text), summary=summary)
+                try:
+                    art.put(str(text), summary=summary)
+                except pywikibot.exceptions.LockedPage:
+                    pass
 
-            if count == 24:
+            if count == 100:
                 break
+
     print("Fixed " + str(count))
     print(str(strategy_stats))
 

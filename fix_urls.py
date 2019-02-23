@@ -2,6 +2,7 @@
 
 import urllib.parse
 from collections import Counter
+import sys
 
 import itertools
 import requests
@@ -212,6 +213,9 @@ FIXES = [
 
 def main():
     """Do the thing."""
+    limit = None
+    if len(sys.argv) > 1:
+        limit = int(sys.argv[1])
     count = 0
     strategy_stats = Counter()
     site = pywikibot.Site("en", "wikipedia")
@@ -268,7 +272,7 @@ def main():
                 except pywikibot.exceptions.LockedPage:
                     pass
 
-            if count == 100:
+            if limit and (count == limit):
                 break
 
     print("Fixed " + str(count))
